@@ -12,13 +12,16 @@ export const Login = () => {
 
         const options = {
             method: "POST",
+            Headers: {
+                "Content-Type": "application/json"
+            },
             body: JSON.stringify ({
 
                 "email": email,
                 "password": password
 
             })
-        }
+        };
 
         fetch("https://3000-rose-hummingbird-1u65s9i7.ws-us25.gitpod.io/api/token", options)
 .then (resp => {
