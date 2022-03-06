@@ -3,6 +3,8 @@ import os
 from flask_admin import Admin
 from .models import db, User
 from flask_admin.contrib.sqla import ModelView
+from flask_cors import CORS
+from flask_jwt_extended import create_access_token
 
 def setup_admin(app):
     app.secret_key = os.environ.get('FLASK_APP_KEY', 'sample key')
