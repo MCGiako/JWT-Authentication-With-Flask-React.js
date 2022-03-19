@@ -1,35 +1,97 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-
-import os
 from flask import Flask, request, jsonify, url_for, Blueprint
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import get_jwt_identity
-from flask_jwt_extended import jwt_required
-
-# Create Flask App
+import json
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+import datetime
 
 api = Blueprint('api', __name__)
 
 
-
-# Create a route to authenticate your users and return JWTs. The
-# create_access_token() function is used to actually generate the JWT.
-@api.route("/token", methods=["POST"])
-def create_token():
-    email = request.json.get("email", None)
-    password = request.json.get("password", None)
-    if email != "test" or password != "test":
-        return jsonify({"msg": "Bad username or password"}), 401
-
-    access_token = create_access_token(identity=email)
-    return jsonify(access_token=access_token)
+@api.route('/hello', methods=['POST', 'GET'])
+def handle_hello():
 
     response_body = {
         "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
     }
 
+    return jsonify(response_body), 200
+
+@api.route('/user', methods=['GET'])
+def get_users():
+    Users = User.query.all()
+    Users = list(map(lambda x: x.serialize(),Users))
+    return jsonify(Users)
+
+@api.route('/users/<int:id>', methods=['GET'])
+@jwt_required()
+def user_id(id):
+    User_id = User.query.get(id)
+    return jsonify(User_id.serialize())
+
+@api.route('/user',  methods=['POST'])
+def set_user():
+    datos = request.get_json()
+    print(datos)
+    if (datos is None):
+        return 'Falta información'
+    if ('email' not in datos):
+        return 'Falta email'
+    if ('password' not in datos):
+        return 'Falta Password'
+    new_user = User.query.filter_by(email = datos['email']).first()
+    if (new_user is None):
+        new_user = User(name = datos['name'], email = datos['email'], password = datos['password'], is_active = True)
+        db.session.add(new_user)
+        db.session.commit()
+        return 'Usuario Registrado'
+    else:
+        return "el usuario ya existe"
+
+
+@api.route('/login', methods=['POST'])
+def set_login():
+    try:
+        datos = request.json
+        print (datos)
+        if (datos is None):
+            return 'Falta información'
+        if ('email' not in datos):
+            return 'Falta email'
+        if ('password' not in datos):
+            return 'Falta Password'
+        
+        user_login = User.query.filter_by(email = datos['email']).first()
     
+        if (user_login):
+            if(user_login.password == datos['password']):
+                
+                access_token = create_access_token(identity = user_login.email) 
+                data_token = {
+                    "info_user": user_login.serialize(),
+                    "token": access_token,
+                    
+                    "status": True 
+                }
+                return jsonify(data_token)     
+            else:
+                return 'Clave Invalida'
+        else:
+            return "Este correo no pertenece a ningun usuario" 
+        return datos
+    except Exception as error: 
+        print (f"login fail: {error}") 
+
+    @api.route('/token', methods=['GET'])
+    def create_token (): 
+        access_token = create_access_token(identity = user_login.email) 
+        data_token = {
+                "info_user": user_login.serialize(),
+                "token": access_token,
+                
+                "status": True 
+            }
+        return jsonify(data_token)

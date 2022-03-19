@@ -1,49 +1,118 @@
 const getState = ({ getStore, getActions, setStore }) => {
-	return {
-		store: {
-			message: null,
-			demo: [
-				{
-					title: "FIRST",
-					background: "white",
-					initial: "white"
-				},
-				{
-					title: "SECOND",
-					background: "white",
-					initial: "white"
-				}
-			]
-		},
-		actions: {
-			// Use getActions to call a function within a fuction
-			exampleFunction: () => {
-				getActions().changeColor(0, "green");
-			},
+  return {
+    store: {
+      datos: null,
+      data: {},
+      status: "",
+      usuarios: [],
+      usuario: {}
+    },
+    actions: {
+      // Use getActions to call a function within a fuction
+      exampleFunction: () => {
+        getActions().changeColor(0, "green");
+      },
 
-			getMessage: () => {
-				// fetching data from the backend
-				fetch(process.env.BACKEND_URL + "/api/hello")
-					.then(resp => resp.json())
-					.then(data => setStore({ message: data.message }))
-					.catch(error => console.log("Error loading message from backend", error));
-			},
-			changeColor: (index, color) => {
-				//get the store
-				const store = getStore();
+      //Todos los usuarios
+      getUsers: async () => {
+        await fetch("https://3001-rose-hummingbird-1u65s9i7.ws-us38.gitpod.io/api/user")
+          .then(response => response.json())
+          .then(data => console.log(data))
+          .then(data => setStore({ usuarios: data }))
+          .catch(error => console.log("error", error));
+      },
 
-				//we have to loop the entire demo array to look for the respective index
-				//and change its color
-				const demo = store.demo.map((elm, i) => {
-					if (i === index) elm.background = color;
-					return elm;
-				});
+      //Detalle usuario
+      // verDetalle: async id => {
+      // 	await fetch(`https://3001-scarlet-antlion-0pnnx640.ws-us27.gitpod.io/api/users/${id}`)
+      // 		.then(response => response.json())
+      // 		.then(data => {
+      //       console.log(data)
+      // 			setStore({ usuario: data })
+      // 		})
+      // 		.catch(error => console.log("error", error));
+      // },
 
-				//reset the global store
-				setStore({ demo: demo });
-			}
-		}
-	};
+      setLogin: async (datoslogin) => {
+        await fetch(
+          "https://3001-rose-hummingbird-1u65s9i7.ws-us38.gitpod.io/api/login",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(datoslogin),
+            redirect: 'follow'
+          }
+        )
+          .then((resp) => resp.json())
+          .then(data => {
+            sessionStorage.setItem("token", data.token)
+            setStore({ datos: data })
+            console.log("Desde Flux", getStore())
+          })
+          .catch((error) => console.log("error", error));
+
+      },
+
+      datosPrivados: async (id) => {
+        try {
+          const store = getStore()
+          await fetch(
+            `https://3001-rose-hummingbird-1u65s9i7.ws-us38.gitpod.io/api/users/${id}`,
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                'Authorization': `Bearer ${store.datos?.token}`
+              }
+            }
+          )
+            .then((resp) => resp.json())
+            .then(data => {
+              console.log(data)
+              setStore({ usuario: data })
+            })
+        } catch (error) {
+          console.log("error", error)
+        }
+
+
+      },
+
+      getTokenSessionStorage: () => {
+        const token = sessionStorage.getItem("token")
+        if (token && token !== "" && token !== undefined) {
+          setStore({ datos: token })
+        }
+      },
+
+      logout: (history) => {
+        sessionStorage.removeItem("token")
+        setStore({ datos: null });
+        history.push('/home')
+      },
+
+      //POST
+      setdatos: (datos) => {
+        fetch(
+          "https://3001-rose-hummingbird-1u65s9i7.ws-us38.gitpod.io/api/user",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(datos),
+          }
+        )
+          .then((response) => response.json())
+          .then(result => console.log(result))
+          .catch((error) => {
+            console.log("El error", error);
+          });
+      },
+    },
+  };
 };
 
 export default getState;
