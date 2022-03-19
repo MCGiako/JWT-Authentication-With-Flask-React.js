@@ -44,7 +44,7 @@ const Layout = () => {
 						<Route exact path="/PrivateView">
 							<PrivateView />
 						</Route>
-						<Route exact path="/Logout">
+						<Route exact path="/logout">
 						<Logout />
 						</Route>
 						<Route exact path>

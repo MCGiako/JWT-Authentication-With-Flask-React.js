@@ -7,33 +7,32 @@ import { Context } from "../store/appContext";
 import { Logout } from "./Logout";
 
 export const PrivateView = () => {
- const { store, actions } = useContext(Context);
+  const { store, actions } = useContext(Context);
   console.log(store.datos?.token);
-  console.log(store.usuario);
-  const { id } = useParams();
-  const history = useHistory();
 
-	useEffect(() => {
-    actions.datosPrivados(id);
-  }, []);
+
+  // useEffect(() => { 
+  //   actions.datosPrivados(id)
+  //   console.log(store);
+  // }, []);
 
   return (
     <>
       <div className="container">
         <div className="row mt-3">
           <div className="col">
-            <h1 className="text-center">Bienvenida Macarena {store.usuario.name}</h1>
+            <h1 className="text-center">Bienvenid@ {store.datos?.info_user.name}</h1>
           </div>
         </div>
         <div className="row mt-3">
           <div className="col">
-            <h2 className="text-center">Perfil Privado</h2>
+            <h2 className="text-center">Perfil Privad</h2>
           </div>
         </div>
         <div className="row mt-3 text-center">
           <div className="col">
-            
-<Link to="/Logout">
+
+
             <button
               onClick={() => {
                 actions.logout(history);
@@ -43,7 +42,7 @@ export const PrivateView = () => {
 
               Logout
             </button>
-</Link>
+
             <Link to="/">
               <button className="btn btn-primary">Back home</button>
             </Link>
@@ -53,4 +52,3 @@ export const PrivateView = () => {
     </>
   );
 };
-        
