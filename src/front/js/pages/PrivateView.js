@@ -26,7 +26,7 @@ export const PrivateView = () => {
         </div>
         <div className="row mt-3">
           <div className="col">
-            <h2 className="text-center">Perfil Privad</h2>
+            <h2 className="text-center">Perfil Privado</h2>
           </div>
         </div>
         <div className="row mt-3 text-center">
